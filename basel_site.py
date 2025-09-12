@@ -4,7 +4,7 @@ import os
 
 app = Flask(__name__)
 
-# 🔑 OpenAI API kalitini environment’dan olish
+# 🔑 OpenAI API kalitini Render yoki kompyuterdan olish
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @app.route('/')
@@ -21,6 +21,7 @@ def home():
             input[type="text"] { width: 60%; padding: 12px; border-radius: 25px; border: 1px solid #90caf9; }
             button { padding: 12px 20px; border-radius: 25px; background: #1565c0; color: white; border: none; }
             button:hover { background: #0d47a1; }
+            a { text-decoration: none; color: #1565c0; }
         </style>
     </head>
     <body>
@@ -60,16 +61,22 @@ def ai():
         '''
     
     try:
+        # 🔥 AI so‘rov yuborish
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": msg}],
-            max_tokens=150
+            max_tokens=500,
+            temperature=0.7
         )
-        answer = response["choices"][0]["message"]["content"]
+        answer = response.choices[0].message["content"].strip()
     except Exception as e:
         answer = f"Xatolik yuz berdi: {str(e)}"
 
-    return f"<h2>Basel Baqaloq javobi</h2><p>{answer}</p><br><a href='/ai'>Orqaga</a> | <a href='/'>Bosh sahifa</a>"
+    return f"""
+    <h2>Basel Baqaloq javobi</h2>
+    <p>{answer}</p>
+    <br><a href='/ai'>Orqaga</a> | <a href='/'>Bosh sahifa</a>
+    """
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
