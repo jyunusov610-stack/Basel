@@ -1,10 +1,11 @@
 from flask import Flask, request
 import openai
+import os
 
-app = Flask(name)
+app = Flask(__name__)
 
-# 🔑 OpenAI API kalitingizni shu yerga yozasiz
-openai.api_key = "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"
+# 🔑 OpenAI kalitini environment variable orqali olamiz
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 @app.route('/')
 def home():
@@ -26,10 +27,9 @@ def search():
     if not query:
         return "<p>Hech narsa yozilmadi.</p><a href='/'>Orqaga</a>"
     
-    # Shunchaki Google linkiga yuborish o‘rniga Basel ichida chiqaramiz
+    # Natijalarni shu sayt ichida iframe orqali ko‘rsatamiz
     return f"""
     <h2>🔎 Basel natijalari:</h2>
-    <p>Hozircha faqat Google'dan foydalanmoqda, keyinchalik o‘zimiznikini qo‘shamiz 😉</p>
     <iframe src="https://www.google.com/search?q={query}" style="width:100%; height:600px;"></iframe>
     <br><a href="/">🏠 Bosh sahifa</a>
     """
@@ -60,5 +60,5 @@ def ai():
 
     return f"<h2>Basel Baqaloq javobi</h2><p>{answer}</p><br><a href='/ai'>Orqaga</a> | <a href='/'>Bosh sahifa</a>"
 
-if name == "main":
+if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
