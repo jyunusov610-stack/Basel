@@ -1,30 +1,43 @@
+# basel_site.py
 from flask import Flask, request, render_template_string, redirect, jsonify
 import random
 
 app = Flask(__name__)
 
-# Feyk AI javoblari
+# =======================
+# Feyk AI javoblari (o'zbekcha + inglizcha)
+# =======================
 AI_RESPONSES = {
     "salom":[
-        ("Salom! Men Baqaloq mushukman 😸", "Hello! I am Baqaloq the cat 😸"),
-        ("Assalomu alaykum! Qalaysiz?", "Peace be upon you! How are you?")
+        ("Salom! Men Baqaloq mushukman 😸","Hello! I am Baqaloq the cat 😸"),
+        ("Assalomu alaykum! Qalaysiz?","Peace be upon you! How are you?")
     ],
     "qalaysan":[
-        ("Yaxshiman, ammo qornim ochdi 🐟", "I’m fine, but I’m hungry 🐟"),
-        ("Zo‘rman, sizchi?", "I’m great, how about you?")
+        ("Yaxshiman, ammo qornim ochdi 🐟","I’m fine, but I’m hungry 🐟"),
+        ("Zo‘rman, sizchi?","I’m great, how about you?")
     ],
     "hazil":[
-        ("Mushuk kompyuterni nega yaxshi ko‘radi? Chunki sichqon bor 😂", "Why do cats love computers? Because they have a mouse 😂")
+        ("Mushuk kompyuterni nega yaxshi ko‘radi? Chunki sichqon bor 😂","Why do cats love computers? Because they have a mouse 😂"),
+        ("Keyingi safar baliq olib keling 😹","Next time you see me, bring a fish 😹")
     ],
     "ovqat":[
-        ("Menga baliq bering 🐟", "Give me fish 🐟")
+        ("Menga baliq bering 🐟","Give me fish 🐟"),
+        ("Pishloq ham yomon bo‘lmasdi 🧀","Cheese wouldn’t be bad either 🧀")
+    ],
+    "fact":[
+        ("Mushuklar internetni ixtiro qilgan! 🐱","Cats invented the internet! 🐱"),
+        ("Mushuklar uyquda ham ishlashadi 😼","Cats work even while sleeping 😼")
     ],
     "default":[
-        ("Hmm... bu savol qiyin ekan 🤔", "Hmm... that’s a tough question 🤔"),
-        ("Ovqat bersangiz aytaman 🍗", "I’ll tell you if you give me food 🍗")
+        ("Hmm... bu savol qiyin ekan 🤔","Hmm... that’s a tough question 🤔"),
+        ("Ovqat bersangiz aytaman 🍗","I’ll tell you if you give me food 🍗"),
+        ("Men hali mushukchaman 😿","I’m still a kitten 😿")
     ]
 }
 
+# =======================
+# HTML & CSS Template
+# =======================
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="uz">
@@ -76,23 +89,65 @@ body.dark .ai{background:linear-gradient(120deg,#333,#444); color:#f1f1f1;}
 <div style="margin-top:10px;">
 <button class="emoji-btn" onclick="sendQuick('ovqat')">🐟 Ovqat ber</button>
 <button class="emoji-btn" onclick="sendQuick('hazil')">😂 Hazil qil</button>
+<button class="emoji-btn" onclick="sendQuick('fact')">ℹ️ Fakt</button>
 </div>
 
 </div>
 
 <script>
+// Dark/Light toggle
 function toggleMode(){document.body.classList.toggle("dark");}
+
+// Type effect
 function typeEffect(el,text,speed=40){let i=0;function t(){if(i<text.length){el.innerHTML+=text.charAt(i);i++;setTimeout(t,speed);}}t();}
-function speak(uz,en){let voices=speechSynthesis.getVoices(); let uzv=voices.find(v=>v.lang.startsWith("uz")&&v.name.toLowerCase().includes("male")); let env=voices.find(v=>v.lang.startsWith("en")&&v.name.toLowerCase().includes("male")); let u=new SpeechSynthesisUtterance(uz); u.lang="uz-UZ"; if(uzv) u.voice=uzv; let e=new SpeechSynthesisUtterance(en); e.lang="en-US"; if(env) e.voice=env; speechSynthesis.speak(u); speechSynthesis.speak(e);}
-function appendMessage(text,className){let box=document.getElementById("chat-box"); let div=document.createElement("div"); div.className="chat "+className; div.innerHTML="<span class='avatar'>🐱</span>"+text; box.appendChild(div); box.scrollTop=box.scrollHeight;}
-function sendMessage(e){e.preventDefault(); let input=document.getElementById("user-input"); let msg=input.value.trim(); if(!msg) return; appendMessage(msg,"user"); fetch("/chat?q="+encodeURIComponent(msg)).then(res=>res.json()).then(data=>{typeEffectResponse(data);}); input.value="";}
-function sendQuick(key){appendMessage(key,"user"); fetch("/chat?q="+encodeURIComponent(key)).then(res=>res.json()).then(data=>{typeEffectResponse(data);});}
-function typeEffectResponse(data){let box=document.getElementById("chat-box"); let div=document.createElement("div"); div.className="chat ai"; div.innerHTML="<span class='avatar'>🐱</span>"; box.appendChild(div); typeEffect(div," "+data.uz); speak(data.uz,data.en);}
+
+// Speech synthesis
+function speak(uz,en){
+ let voices=speechSynthesis.getVoices();
+ let uzv=voices.find(v=>v.lang.startsWith("uz")&&v.name.toLowerCase().includes("male"));
+ let env=voices.find(v=>v.lang.startsWith("en")&&v.name.toLowerCase().includes("male"));
+ let u=new SpeechSynthesisUtterance(uz); u.lang="uz-UZ"; if(uzv) u.voice=uzv;
+ let e=new SpeechSynthesisUtterance(en); e.lang="en-US"; if(env) e.voice=env;
+ speechSynthesis.speak(u); speechSynthesis.speak(e);
+}
+
+// Append message to chat
+function appendMessage(text,className){
+ let box=document.getElementById("chat-box");
+ let div=document.createElement("div");
+ div.className="chat "+className;
+ div.innerHTML="<span class='avatar'>🐱</span>"+text;
+ box.appendChild(div); box.scrollTop=box.scrollHeight;
+}
+
+// Send chat message
+function sendMessage(e){
+ e.preventDefault();
+ let input=document.getElementById("user-input"); let msg=input.value.trim();
+ if(!msg) return;
+ appendMessage(msg,"user");
+ fetch("/chat?q="+encodeURIComponent(msg)).then(res=>res.json()).then(data=>{
+   let aiDiv=document.createElement("div"); aiDiv.className="chat ai"; aiDiv.innerHTML="<span class='avatar'>🐱</span>"; document.getElementById("chat-box").appendChild(aiDiv);
+   typeEffect(aiDiv," "+data.uz);
+   speak(data.uz,data.en);
+   document.getElementById("chat-box").scrollTop=document.getElementById("chat-box").scrollHeight;
+ });
+ input.value="";
+}
+
+// Quick buttons
+function sendQuick(key){appendMessage(key,"user"); fetch("/chat?q="+encodeURIComponent(key)).then(res=>res.json()).then(data=>{
+   let aiDiv=document.createElement("div"); aiDiv.className="chat ai"; aiDiv.innerHTML="<span class='avatar'>🐱</span>"; document.getElementById("chat-box").appendChild(aiDiv);
+   typeEffect(aiDiv," "+data.uz); speak(data.uz,data.en);
+ });}
 </script>
 </body>
 </html>
 """
 
+# =======================
+# Flask routes
+# =======================
 @app.route("/")
 def home():
     return render_template_string(HTML_TEMPLATE)
