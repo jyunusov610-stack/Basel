@@ -7,7 +7,7 @@ import os
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Change this!
 
-# Flask-Login setup (user login)
+# Flask-Login setup
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
@@ -18,15 +18,15 @@ class User(UserMixin):
 def load_user(user_id):
     return User()
 
-# MeiliSearch setup (search system)
-client = Client('http://127.0.0.1:7700')
+# MeiliSearch setup
+client = Client('http://127.0.0.1:7700')  # OnRender'da localhost ishlamаса, IP'ni олинг
 index = client.index('items')
 index.add_documents([
     {'id': 1, 'title': 'Mahsulot 1', 'desc': 'Bu test mahsulot'},
     {'id': 2, 'title': 'Mahsulot 2', 'desc': 'AI integratsiyasi'}
-])  # Add your data here
+])
 
-# AI Chatbot (Hugging Face)
+# AI Chatbot setup
 chatbot = pipeline('conversational', model='distilbert-base-uncased')
 
 @app.route('/', methods=['GET', 'POST'])
@@ -50,7 +50,6 @@ def toggle_dark():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        # Simple login (username: user, password: pass)
         if request.form['username'] == 'user' and request.form['password'] == 'pass':
             user = User()
             login_user(user)
