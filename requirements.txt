@@ -2,6 +2,3 @@ Flask>=2.3.3
 gunicorn==21.2.0
 meilisearch==0.21.0
 flask-login==0.6.3
---index-url https://download.pytorch.org/whl/cpu
-torch==2.0.0
-transformers==4.30.0
