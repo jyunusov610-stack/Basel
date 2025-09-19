@@ -1,1 +1,1 @@
-web: gunicorn basel_site:app
+web: gunicorn --bind 0.0.0.0:$PORT basel_site:app
